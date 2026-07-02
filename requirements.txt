@@ -1,0 +1,17 @@
+# PhononFlow - Python dependencies
+# These are installed automatically with `pip install phonon-flow`
+#
+# External tools you MUST install separately:
+#   - VASP (licensed DFT code, on your HPC cluster)
+#   - phonopy: conda install -c conda-forge phonopy
+#   - OpenSSH client: usually pre-installed on Linux/macOS
+
+numpy>=1.24
+matplotlib>=3.7
+pyyaml>=6.0
+paramiko>=3.0
+scipy>=1.10
+requests>=2.28
+click>=8.1
+rich>=13.0
+tqdm>=4.65

@@ -1,0 +1,91 @@
+[build-system]
+requires = ["setuptools>=68.0", "wheel"]
+build-backend = "setuptools.backends._legacy:_Backend"
+
+[project]
+name = "phonon-flow"
+version = "0.1.0"
+description = "First-principles phonon calculation workflow engine for HPC clusters"
+readme = "README.md"
+license = {text = "MIT"}
+authors = [
+    {name = "PhononFlow Contributors"}
+]
+keywords = [
+    "vasp", "phonopy", "phonon", "dft", "materials-science",
+    "condensed-matter", "raman", "first-principles", "hpc",
+    "slurm", "computational-physics"
+]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Science/Research",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Scientific/Engineering :: Physics",
+    "Topic :: Scientific/Engineering :: Chemistry",
+]
+requires-python = ">=3.10"
+dependencies = [
+    "numpy>=1.24",
+    "matplotlib>=3.7",
+    "pyyaml>=6.0",
+    "paramiko>=3.0",
+    "scipy>=1.10",
+    "requests>=2.28",
+    "click>=8.1",
+    "rich>=13.0",
+    "tqdm>=4.65",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.0",
+    "pytest-cov>=4.0",
+    "black>=23.0",
+    "ruff>=0.3",
+    "mypy>=1.0",
+    "pre-commit>=3.0",
+]
+docs = [
+    "mkdocs>=1.5",
+    "mkdocs-material>=9.0",
+    "mkdocstrings[python]>=0.22",
+]
+knowledge = [
+    "httpx>=0.25",
+]
+
+[project.urls]
+Homepage = "https://github.com/phonon-flow/phonon-flow"
+Documentation = "https://phonon-flow.readthedocs.io"
+Repository = "https://github.com/phonon-flow/phonon-flow"
+Issues = "https://github.com/phonon-flow/phonon-flow/issues"
+
+[project.scripts]
+phonon-flow = "phonon_flow.cli:main"
+
+[tool.setuptools.packages.find]
+include = ["phonon_flow*"]
+
+[tool.black]
+line-length = 100
+target-version = ["py310"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py310"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "N", "W"]
+
+[tool.mypy]
+python_version = "3.10"
+warn_return_any = true
+warn_unused_configs = true
+
+[tool.pytest.ini_options]
+testpaths = ["phonon_flow/tests"]
+python_files = "test_*.py"

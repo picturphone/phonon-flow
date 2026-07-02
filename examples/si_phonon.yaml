@@ -1,0 +1,104 @@
+# Si Phonon Calculation Configuration
+# ======================================
+# Example: Si (silicon), diamond structure, Fd-3m space group (#227)
+# This is the standard VASP/Phonopy tutorial material.
+# Backend: HPC SLURM cluster
+#
+# Usage:
+#   phonon-flow run -c si_phonon.yaml
+
+material:
+  name: Si
+  poscar_path: ""  # Set to your POSCAR path, or provide POSCAR in output_dir
+  potcar_elements:
+    - Si
+  crystal_system: cubic
+  space_group: 227  # Fd-3m (diamond)
+
+backend:
+  type: hpc_slurm
+
+  hpc_slurm:
+    host: login.hpc.example.com
+    port: 22
+    username: YOUR_USERNAME
+    keyfile: ~/.ssh/id_rsa
+    partition: YOUR_PARTITION
+    nodes: 1
+    ntasks_per_node: 32
+    cpus_per_task: 1
+    mem_per_cpu: 2gb
+    walltime: "12:00:00"
+
+    vasp_bin: ~/path/to/vasp_std
+
+    env_setup:
+      - "module purge"
+      - "source ~/path/to/vasp/env.sh"
+
+    env_exports:
+      I_MPI_PIN_DOMAIN: numa
+      OMP_NUM_THREADS: "1"
+
+    srun_cmd: srun --mpi=pmi2 vasp_std
+    work_dir: ~/phonon_flow
+
+# --- VASP Settings ---
+
+relax_settings:
+  encut: 520
+  ediff: 1.0e-5
+  ediffg: -0.001
+  nsw: 200
+  ibrion: 2
+  isif: 3
+  ismear: 0
+  sigma: 0.05
+  prec: Accurate
+  lwave: false
+  lcharg: false
+
+phonon_settings:
+  encut: 520
+  ediff: 1.0e-8
+  nsw: 0
+  ibrion: -1
+  ismear: 0
+  sigma: 0.05
+  prec: Accurate
+  addgrid: true
+  lwave: false
+  lcharg: false
+
+# --- K-Points ---
+
+relax_kpoints:
+  method: Gamma
+  grid: [8, 8, 8]  # Cubic system: uniform k-mesh
+
+phonon_kpoints:
+  method: Gamma
+  grid: [4, 4, 4]  # 2x2x2 supercell can use coarser mesh
+
+# --- Phonopy ---
+
+phonopy:
+  supercell_dim: [2, 2, 2]  # 16 atoms per supercell
+  band_points: 101
+  tolerance: 1.0e-5
+
+# --- IMA Knowledge Base (optional) ---
+
+# knowledge:
+#   enabled: true
+#   client_id: "your_client_id"
+#   api_key: "your_api_key"
+#   knowledge_base_id: "your_kb_id"
+#   auto_sync: false
+#   sync_report: true
+
+# --- Output ---
+
+output_dir: ./Si_phonon_calc
+save_intermediate: true
+verbose: false

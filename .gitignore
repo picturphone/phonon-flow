@@ -1,0 +1,69 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+*.egg-info/
+dist/
+build/
+eggs/
+*.egg
+.eggs/
+
+# Virtual environments
+venv/
+.venv/
+env/
+.env/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Testing
+.pytest_cache/
+.coverage
+htmlcov/
+.tox/
+
+# MyPy
+.mypy_cache/
+
+# Jupyter
+.ipynb_checkpoints/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# VASP output files (large, should never be versioned)
+WAVECAR
+CHGCAR
+CHG
+vaspout.h5
+*.h5
+
+# Phonopy output
+band.yaml
+phonopy.yaml
+FORCE_SETS
+FORCE_CONSTANTS
+SPOSCAR
+
+# Config files with secrets
+*.secret.yaml
+*.secret.yml
+.env.local
+credentials.json
+ima_credentials.json
+
+# Distribution
+*.tar.gz
+*.whl
+
+# Logs
+*.log
+logs/
