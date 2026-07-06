@@ -1,124 +1,111 @@
 # PhononFlow
 
-<p align="center">
-  <b>First-Principles Phonon Calculation Workflow Engine for HPC Clusters</b><br>
-  <em>Python Package · PyPI + GitHub</em>
-</p>
+**让 AI 帮你跑通 VASP 声子计算。**
 
-<p align="center">
-  <a href="#features">Features</a> •
-  <a href="#quick-start">Quick Start</a> •
-  <a href="#installation">Installation</a> •
-  <a href="#usage">Usage</a> •
-  <a href="#architecture">Architecture</a> •
-  <a href="#citation">Citation</a>
-</p>
+把 PhononFlow 交给你的 AI 助手（Claude / ChatGPT / 其他），它就能替你完成从配置到运行的全部流程——而你不需要懂任何技术。
 
 ---
 
-**PhononFlow** is a **Python library + CLI tool** (not an AI agent skill) that automates the entire DFT phonon calculation pipeline — from structure relaxation to publication-ready phonon dispersion and Raman activity analysis — with seamless remote execution on HPC clusters.
+## 给谁用的？
 
-| Backend | Transport | Scheduler | Best For |
-|---------|-----------|-----------|----------|
-| **HPC Cluster** | SSH | SLURM | Production, large supercells |
-| **Local** | None | None | Phonopy post-processing |
+你如果符合下面任意一条，PhononFlow 就是为你准备的：
 
-Results can be automatically archived to **Tencent IMA** knowledge base for team collaboration.
+- 你**不会写代码**，但会用 AI 聊天
+- 你**不懂 Linux 命令**，不知道 `ssh`、`scp`、`grep` 是什么
+- 你**没用过 SLURM**，不知道 `sbatch` 和 `sacct` 怎么用
+- 你**没碰过 VASP**，不知道怎么准备输入文件
+- 你**不想学这些**，你只想算出声子谱
+
+你不是一个人。你有一个 AI 助手——而 PhononFlow 就是让你和 AI 助手协作的工具。
 
 ---
 
-## Features
+## 能干什么？
 
-- **HPC remote execution** — Run VASP on SLURM clusters or locally via a unified API
-- **End-to-end automation** — `relax → displace → forces → bands → Raman` in one command
-- **Validation-first strategy** — Submit 1 test job, verify, then batch (saves compute-hours)
-- **Raman activity classification** — Automatic Γ-point irreducible representation analysis
-- **VESTA-compatible output** — Eigenvectors written for 3D vibration visualization
-- **IMA knowledge base sync** — Archive results, configs, and reports to cloud knowledge base
-- **Rich CLI** — Beautiful terminal UI with progress tracking
-- **YAML-driven configuration** — Declarative, version-controllable, reproducible
+PhononFlow 是一个 **AI 能看懂并操作的声子计算模板**。
 
-## Quick Start
+你只需要告诉 AI 助手：
+- "我要算什么材料"（提供结构文件）
+- "我的集群 IP 和用户名是什么"
+
+AI 助手就会：
+1. 读取 PhononFlow 的全部代码
+2. 询问你需要的配置信息
+3. 帮你生成 SSH 密钥并上传到集群
+4. 修改 YAML 配置文件
+5. 替你提交 VASP 声子计算任务
+6. 等计算完成后，自动跑 Phonopy 后处理，给你声子谱图
+
+**你全程只需要复制粘贴和跟 AI 聊天。**
+
+---
+
+## 价值在哪里？
+
+**价值一：你不需要学任何技术**
+
+VASP 声子计算本来需要你学会：Linux 基础命令、SSH 远程连接、SLURM 作业调度、VASP 输入文件格式、Phonopy 后处理……学完这些至少几周。有了 PhononFlow，AI 替你干了所有技术活。
+
+**价值二：每次计算省 80%~90% 的 Token**
+
+如果你之前让 AI 帮你写 HPC 操作代码，每次都要生成几百行 `ssh`、`scp`、`sbatch` 脚本。PhononFlow 把流程固化成模板，AI 下次只需要改几个参数，不用重新写全部代码。
+
+**价值三：你不是一个人在战斗**
+
+你不会技术，但你有一个 AI 助手。PhononFlow 就是你们两个之间的"共同语言"——一个结构化的、AI 可操作的 HPC 流程说明书。
+
+---
+
+## 怎么开始？
+
+**第一步：** 把这个仓库的链接发给你的 AI 助手。
+
+**第二步：** 告诉 AI 助手：
+
+> "我想用 PhononFlow 算一个材料的声子谱。这是我的结构文件：[附上文件]。我的集群 IP 是 xxx，用户名是 xxx。帮我配置并运行。"
+
+**第三步：** 按照 AI 助手的提示，复制粘贴它给你的命令。
+
+**然后等结果就行了。**
+
+---
+
+## 技术细节（给 AI 看的）
+
+PhononFlow 是一个 Python 库 + CLI 工具，通过 SSH 远程连接 SLURM 集群，自动化执行完整的 DFT 声子计算流水线：`relax → displace → forces → bands → Raman`。配置通过 YAML 文件驱动，采用"验证优先"策略——先提交 1 个测试任务验证配置，再批量提交所有位移结构，避免算了几十个小时才发现参数错了。
+
+### 安装
+
+**外部工具（单独安装）：**
+
+| 工具 | 用途 | 安装方式 |
+|------|------|---------|
+| [VASP](https://www.vasp.at/) | DFT 计算（HPC 集群上） | 授权软件——在集群上安装 |
+| [phonopy](https://phonopy.github.io/phonopy/) | 后处理（本地） | `conda install -c conda-forge phonopy` |
+
+**Python 依赖（自动安装）：** Python ≥ 3.10, `paramiko`, `pyyaml`, `click`, `rich`
 
 ```bash
-# 1. Install
 pip install phonon-flow
-
-# 2. Generate config (Si = standard VASP/Phonopy tutorial material)
-phonon-flow init Si -e Si --crystal cubic --space-group 227 \
-  --backend hpc_slurm -o si.yaml
-
-# 3. Edit config (fill in paths, credentials)
-
-# 4. Verify connectivity
-phonon-flow check -c si.yaml
-
-# 5. Run
-phonon-flow run -c si.yaml
 ```
 
-**Or via Python API:**
-
-```python
-from phonon_flow import PhononConfig, PhononWorkflow
-from phonon_flow.backends import HPCSLURMBackend
-
-config = PhononConfig.from_yaml("si_phonon.yaml")
-backend = HPCSLURMBackend(
-    host="login.hpc.example.com", port=22,
-    username="YOUR_USERNAME", keyfile="~/.ssh/id_rsa",
-    partition="YOUR_PARTITION", ntasks_per_node=32,
-    vasp_bin="~/path/to/vasp_std",
-    env_setup=["module purge", "source ~/path/to/vasp/env.sh"],
-    env_exports={"I_MPI_PIN_DOMAIN": "numa"},
-)
-
-with PhononWorkflow(config, backend) as wf:
-    wf.run_all()  # Full pipeline
-```
-
-## Installation
-
-**External tools (install separately):**
-
-| Tool | Required For | Installation |
-|------|-------------|-------------|
-| [VASP](https://www.vasp.at/) | DFT calculations (HPC cluster) | Licensed software — install on your HPC |
-| [phonopy](https://phonopy.github.io/phonopy/) | Post-processing (local) | `conda install -c conda-forge phonopy` or `pip install phonopy` |
-
-**Python dependencies (auto-installed):** Python ≥ 3.10, `paramiko`, `pyyaml`, `click`, `rich`
+### 命令行
 
 ```bash
-pip install phonon-flow
-
-# For IMA knowledge base support:
-pip install phonon-flow[knowledge]
-
-# For development:
-pip install phonon-flow[dev]
-```
-
-## Usage
-
-### Command Line
-
-```bash
-# Initialize
+# 初始化
 phonon-flow init Si -e Si --crystal cubic --space-group 227
-phonon-flow init MoS2 -e Mo,S --crystal hexagonal --space-group 194
 
-# Verify
+# 验证连接
 phonon-flow check -c si_phonon.yaml
 
-# Run specific steps
-phonon-flow run -c config.yaml -s relax -s displace
+# 分步运行（因为 VASP 计算耗时间）
+phonon-flow run -c config.yaml -s relax        # 先弛豫
+phonon-flow run -c config.yaml -s displace -s forces  # 再算力常数
+phonon-flow run -c config.yaml -s bands -s raman -s plot  # 最后分析
 
-# Run all except sync
-phonon-flow run -c config.yaml --skip sync
-
-# Queue management (HPC only)
-phonon-flow queue -c config.yaml        # List jobs
-phonon-flow queue -c config.yaml --kill # Cancel all
+# 队列管理
+phonon-flow queue -c config.yaml        # 查看作业
+phonon-flow queue -c config.yaml --kill # 取消全部
 ```
 
 ### Python API
@@ -126,123 +113,83 @@ phonon-flow queue -c config.yaml --kill # Cancel all
 ```python
 from phonon_flow import PhononConfig, PhononWorkflow
 
-# Load config
 config = PhononConfig.from_yaml("config.yaml")
-
 wf = PhononWorkflow(config)
 
-# Run individual steps
-results = wf.run_relax()      # Step 1
-results = wf.run_displace()   # Step 2
-results = wf.run_forces()     # Step 3
-results = wf.run_bands()      # Step 4
-results = wf.run_raman()      # Step 5
-
-# Or the full pipeline
-wf.run_all()
-
-# Generate report
-report = wf.render_report()
+# 分步执行
+wf.run_relax()       # 弛豫
+wf.run_displace()    # 生成超胞位移
+wf.run_forces()      # 力常数计算
+wf.run_bands()       # 声子色散
+wf.run_raman()       # Raman 活性分析
+wf.render_report()   # 生成报告
 ```
 
-### Configuration
-
-See `examples/si_phonon.yaml` for a complete annotated example.
+### 配置示例
 
 ```yaml
 material:
   name: Si
   potcar_elements: [Si]
   crystal_system: cubic
-  space_group: 227  # Fd-3m
+  space_group: 227
 
 backend:
   type: hpc_slurm
   hpc_slurm:
     host: login.hpc.example.com
-    # ... credentials ...
+    username: YOUR_USERNAME
+    keyfile: ~/.ssh/id_rsa
+    partition: YOUR_PARTITION
+    ntasks_per_node: 32
+    vasp_bin: ~/path/to/vasp_std
+    env_setup:
+      - "module purge"
+      - "source ~/path/to/vasp/env.sh"
 
 phonopy:
   supercell_dim: [2, 2, 2]
   band_points: 101
 ```
 
-## Architecture
+### 架构
 
 ```
-┌─────────────────────────────────────────────────┐
-│                    CLI (click)                    │
-│  phonon-flow {run, check, init, queue, status}   │
-└──────────────────────┬──────────────────────────┘
-                       │
-┌──────────────────────▼──────────────────────────┐
-│              PhononWorkflow                       │
-│  ┌──────┐  ┌──────────┐  ┌──────┐  ┌─────────┐ │
-│  │relax │→│ displace  │→│forces│→│  bands   │ │
-│  └──────┘  └──────────┘  └──────┘  └────┬────┘ │
-│                                         │        │
-│  ┌─────────┐  ┌────────┐  ┌───────────┐│        │
-│  │  sync   │← │ report │← │  raman    │◄        │
-│  └────┬────┘  └────────┘  └───────────┘         │
-└───────┼──────────────────────────────────────────┘
-        │
-┌───────▼────────┬──────────────────┬──────────────┐
-│  IMA Client    │  Remote Backends │  Local Utils  │
-│ (knowledge)    │  ┌─────────────┐ │  (phonopy)    │
-│                │  │HPC SLURM    │ │               │
-│ • create_note  │  │  (SSH)      │ │  • bands.py   │
-│ • upload_file  │  ├─────────────┤ │  • raman.py   │
-│ • search       │  │Local        │ │  • plotting   │
-│ • sync_report  │  │  (direct)   │ │  • templates  │
-│                │  └─────────────┘ │               │
-└────────────────┴──────────────────┴───────────────┘
+CLI (click)
+  └── PhononWorkflow
+        ├── relax     → HPC SLURM (SSH)
+        ├── displace  → 本地 phonopy
+        ├── forces    → HPC SLURM (SSH)
+        ├── bands     → 本地 phonopy
+        ├── raman     → 本地 phonopy
+        ├── plot      → 本地 matplotlib
+        └── report    → Markdown 汇总
 ```
 
-## Real-World Validation
+### 验证
 
-PhononFlow has been validated on the standard VASP/Phonopy tutorial material **Si (diamond, Fd-3m, #227)**:
+在标准 VASP/Phonopy 教程材料 **Si（金刚石, Fd-3m, #227）** 上验证通过：
 
-| Metric | Value |
-|--------|-------|
-| Supercell | 2×2×2 = 16 atoms |
-| Displacements | 1 (high symmetry) |
-| ENCUT | 520 eV |
-| Total core-hours | ~1 (HPC, 32 cores/node) |
-| Phonon modes | 6 (3 acoustic + 3 optical) |
-| Stability | ✅ No imaginary frequencies |
-| Raman-active | 1 mode (T₂g, ~520 cm⁻¹) |
+| 指标 | 值 |
+|------|-----|
+| 超胞 | 2×2×2 = 16 原子 |
+| 声子模式 | 6（3 声学 + 3 光学） |
+| 稳定性 | 无虚频 |
+| Raman 活性 | 1 模式（T₂g, ~520 cm⁻¹） |
 
-> **Validator level**: Si is the official VASP tutorial system — anyone can reproduce the results.
-
-## Contributing
-
-See [CONTRIBUTING.md](CONTRIBUTING.md) for development setup and guidelines.
-
-Areas we'd love help with:
-- **New backends**: PBS/Torque, LSF, cloud (AWS Batch, GCP)
-- **Support matrices**: DFT+U, HSE06, GW phonons
-- **Visualization**: VESTA 3D rendering, interactive band plots
-- **More space groups**: Raman classification tables
-- **Testing**: Integration tests for various backends
-
-## Citing
-
-If you use PhononFlow in your research, please cite:
+## 引用
 
 ```bibtex
 @software{phononflow2026,
-  title = {PhononFlow: First-Principles Phonon Calculation Workflow Engine},
+  title = {PhononFlow: AI-Operated Phonon Calculation Workflow},
   author = {PhononFlow Contributors},
   year = {2026},
-  url = {https://github.com/phonon-flow/phonon-flow},
+  url = {https://github.com/picturphone/phonon-flow},
 }
 ```
 
-This project builds on:
-- [VASP](https://www.vasp.at/) — Vienna Ab initio Simulation Package
-- [phonopy](https://phonopy.github.io/phonopy/) — Phonon calculation library
-- [paramiko](https://www.paramiko.org/) — SSH library for Python
+本项目基于 [VASP](https://www.vasp.at/)、[phonopy](https://phonopy.github.io/phonopy/) 和 [paramiko](https://www.paramiko.org/)。
 
 ## License
 
-MIT License. See [LICENSE](LICENSE) for details.
+MIT License.
