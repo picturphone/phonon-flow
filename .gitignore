@@ -56,6 +56,7 @@ SPOSCAR
 # Config files with secrets
 *.secret.yaml
 *.secret.yml
+*_personal.yaml
 .env.local
 credentials.json
 ima_credentials.json
